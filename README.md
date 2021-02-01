@@ -1,1 +1,1 @@
-# flask-app-3rd-week
+# Stepik Flask Week 2 Project
