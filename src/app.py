@@ -1,4 +1,5 @@
 from flask import Flask, render_template
+import data
 
 
 app = Flask(__name__)
@@ -7,7 +8,11 @@ app = Flask(__name__)
 @app.route('/')
 def main_view():
     """Main page"""
-    return render_template('index.html')
+    context = {
+        'goals': data.goals,
+        'teachers': data.teachers
+    }
+    return render_template('index.html', context=context)
 
 
 @app.route('/all/')
