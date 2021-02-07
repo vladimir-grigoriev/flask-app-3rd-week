@@ -1,8 +1,11 @@
-from flask import Flask, render_template
+import random
+from flask import Flask, render_template, request
+from forms import GoalForm
 import data
 
 
 app = Flask(__name__)
+app.secret_key = 'j08134gjrg894-rg[8rh[g`80=[h84390h`hp9gp9438h43r9'
 
 
 @app.route('/')
@@ -10,15 +13,69 @@ def main_view():
     """Main page"""
     context = {
         'goals': data.goals,
-        'teachers': data.teachers
+        'teachers': [
+            i for i in sorted(
+                data.teachers,
+                key=lambda x: x['rating'],
+                reverse=True
+            )
+        ][:5]
     }
     return render_template('index.html', context=context)
 
 
-@app.route('/all/')
+@app.route('/all/', methods=['GET', 'POST'])
 def all_teachers_view():
     """Page with all the teachers profiles"""
-    return render_template('all.html')
+    form = GoalForm()
+    context = {
+        'teachers': data.teachers,
+        'form': form
+    }
+    if request.method == 'POST':
+        if form.goal.data == 'random':
+            random.shuffle(data.teachers)
+            context.update(
+                {
+                    'teachers': data.teachers
+                }
+            )
+        elif form.goal.data == 'the_best':
+            context.update(
+                {
+                    'teachers': [
+                        i for i in sorted(
+                            data.teachers,
+                            key=lambda x: x['rating'],
+                            reverse=True
+                        )
+                    ]
+                }
+            )
+        elif form.goal.data == 'expensive':
+            context.update(
+                {
+                    'teachers': [
+                        i for i in sorted(
+                            data.teachers,
+                            key=lambda x: x['price'],
+                            reverse=True
+                        )
+                    ]
+                }
+            )
+        elif form.goal.data == 'cheap':
+            context.update(
+                {
+                    'teachers': [
+                        i for i in sorted(
+                            data.teachers,
+                            key=lambda x: x['price']
+                        )
+                    ]
+                }
+            )
+    return render_template('all.html', context=context)
 
 
 @app.route('/goals/<goal>/')
