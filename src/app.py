@@ -28,10 +28,12 @@ def main_view():
 def all_teachers_view():
     """Page with all the teachers profiles"""
     form = GoalForm()
+
     context = {
         'teachers': data.teachers,
         'form': form
     }
+
     if request.method == 'POST':
         if form.goal.data == 'random':
             random.shuffle(data.teachers)
@@ -75,6 +77,7 @@ def all_teachers_view():
                     ]
                 }
             )
+
     return render_template('all.html', context=context)
 
 
