@@ -1,4 +1,5 @@
 import random
+import json
 from flask import Flask, render_template, request
 from forms import GoalForm
 import data
@@ -37,11 +38,7 @@ def all_teachers_view():
     if request.method == 'POST':
         if form.goal.data == 'random':
             random.shuffle(data.teachers)
-            context.update(
-                {
-                    'teachers': data.teachers
-                }
-            )
+            context.update({'teachers': data.teachers})
         elif form.goal.data == 'the_best':
             context.update(
                 {
@@ -84,13 +81,36 @@ def all_teachers_view():
 @app.route('/goals/<goal>/')
 def choose_goal_view(goal):
     """Page with teachers sorted by the goal"""
-    return render_template('goal.html')
+    context = {
+        'goal': list(filter(lambda x: x['goal'] == goal, data.goals))[0],
+        'teachers': [i for i in data.teachers if goal in i['goals']]
+    }
+    return render_template('goal.html', context=context)
 
 
-@app.route('/profiles/<teacher_id>/')
+@app.route('/profiles/<int:teacher_id>/')
 def teacher_profile_view(teacher_id):
     """Page for current teacher profile"""
-    return render_template('profile.html')
+    days = {
+        'mon': 'Понедельник',
+        'tue': 'Вторник',
+        'wed': 'Среда',
+        'thu': 'Четверг',
+        'fri': 'Пятница',
+        'sat': 'Суббота',
+        'sun': 'Воскресенье'
+    }
+    context = {
+        'days': days
+    }
+    with open('src/db/teachers.json', 'r') as f:
+        teacher = json.load(f)[teacher_id]
+        goals = list(filter(
+            lambda x: x['goal'] in teacher['goals'], data.goals)
+        )
+        context['teacher'] = teacher
+        context['goals'] = goals
+    return render_template('profile.html', context=context)
 
 
 @app.route('/request/')
