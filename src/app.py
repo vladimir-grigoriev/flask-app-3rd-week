@@ -1,7 +1,7 @@
 import random
 import json
-from flask import Flask, render_template, request
-from forms import GoalForm
+from flask import Flask, render_template, request, redirect, url_for, session
+from forms import GoalForm, RequestForm, BookingForm
 import data
 
 
@@ -17,7 +17,7 @@ def main_view():
         'teachers': [
             i for i in sorted(
                 data.teachers,
-                key=lambda x: x['rating'],
+                key=lambda teacher: teacher['rating'],
                 reverse=True
             )
         ][:5]
@@ -38,42 +38,30 @@ def all_teachers_view():
     if request.method == 'POST':
         if form.goal.data == 'random':
             random.shuffle(data.teachers)
-            context.update({'teachers': data.teachers})
+            context['teachers'] = data.teachers
         elif form.goal.data == 'the_best':
-            context.update(
-                {
-                    'teachers': [
-                        i for i in sorted(
-                            data.teachers,
-                            key=lambda x: x['rating'],
-                            reverse=True
-                        )
-                    ]
-                }
-            )
+            context['teachers'] = [
+                i for i in sorted(
+                    data.teachers,
+                    key=lambda teacher: teacher['rating'],
+                    reverse=True
+                )
+            ]
         elif form.goal.data == 'expensive':
-            context.update(
-                {
-                    'teachers': [
-                        i for i in sorted(
-                            data.teachers,
-                            key=lambda x: x['price'],
-                            reverse=True
-                        )
-                    ]
-                }
-            )
+            context['teachers'] = [
+                i for i in sorted(
+                    data.teachers,
+                    key=lambda teacher: teacher['price'],
+                    reverse=True
+                )
+            ]
         elif form.goal.data == 'cheap':
-            context.update(
-                {
-                    'teachers': [
-                        i for i in sorted(
-                            data.teachers,
-                            key=lambda x: x['price']
-                        )
-                    ]
-                }
-            )
+            context['teachers'] = [
+                i for i in sorted(
+                    data.teachers,
+                    key=lambda teacher: teacher['price']
+                )
+            ]
 
     return render_template('all.html', context=context)
 
@@ -82,7 +70,10 @@ def all_teachers_view():
 def choose_goal_view(goal):
     """Page with teachers sorted by the goal"""
     context = {
-        'goal': list(filter(lambda x: x['goal'] == goal, data.goals))[0],
+        'goal': list(filter(
+            lambda list_of_goals: list_of_goals['goal'] == goal,
+            data.goals
+        ))[0],
         'teachers': [i for i in data.teachers if goal in i['goals']]
     }
     return render_template('goal.html', context=context)
@@ -106,29 +97,44 @@ def teacher_profile_view(teacher_id):
     with open('src/db/teachers.json', 'r') as f:
         teacher = json.load(f)[teacher_id]
         goals = list(filter(
-            lambda x: x['goal'] in teacher['goals'], data.goals)
-        )
+            lambda list_of_goals: list_of_goals['goal'] in teacher['goals'],
+            data.goals
+        ))
         context['teacher'] = teacher
         context['goals'] = goals
     return render_template('profile.html', context=context)
 
 
-@app.route('/request/')
+@app.route('/request/', methods=['GET', 'POST'])
 def request_view():
     """Page for teacher selection form"""
-    return render_template('request.html')
+    form = RequestForm()
+    if request.method == 'POST':
+        if form.validate_on_submit():
+            session['data'] = form.data
+            return redirect(url_for('request_done_view'))
+    return render_template('request.html', form=form)
 
 
 @app.route('/request_done/')
 def request_done_view():
     """Page for redirect after filling in the request form"""
-    return render_template('request_done.html')
+    context = {
+        'data': session['data'],
+        'goal': list(filter(
+            lambda goals: goals['goal'] == session['data']['goal'],
+            data.goals
+        ))[0]
+    }
+    return render_template('request_done.html', context=context)
 
 
 @app.route('/booking/<teacher_id>/<day>/<time>/')
 def booking_view(teacher_id, day, time):
     """Page for booking the teacher for current day and current time"""
-    return render_template('booking.html')
+
+    form = BookingForm()
+    return render_template('booking.html', form=form)
 
 
 @app.route('/booking_done/')
