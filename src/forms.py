@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm
 from wtforms import SelectField, StringField, RadioField, IntegerField
 from wtforms import validators
-import data
+import src.data as data
 
 
 class GoalForm(FlaskForm):

@@ -1,5 +1,5 @@
 import json
-import data
+import src.data as data
 
 
 with open('db/teachers.json', 'w') as f:

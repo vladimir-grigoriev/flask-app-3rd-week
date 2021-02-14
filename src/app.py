@@ -2,10 +2,10 @@ import random
 import json
 
 from flask import Flask, render_template, request, redirect, url_for, session
-from forms import GoalForm, RequestForm, BookingForm
 
-import data
-import constants
+import src.data as data
+import src.constants as constants
+from src.forms import GoalForm, RequestForm, BookingForm
 
 
 app = Flask(__name__)
@@ -192,4 +192,4 @@ def booking_done_view():
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run()
