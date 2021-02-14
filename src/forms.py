@@ -93,7 +93,7 @@ class BookingForm(FlaskForm):
     )
     day = StringField(
         label='День'
-    ),
+    )
     time = StringField(
         label='Время'
     )

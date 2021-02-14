@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}{% endblock title %}
+{% block title %}Request Done{% endblock title %}
 
 {% block body %}
 
@@ -21,6 +21,7 @@
           <p><b>Имя:</b> {{ context.data.name }}</p>
           <p><b>Телефон:</b> {{ context.data.phone }}</p>
         </div>
+        <a href="{{ url_for('main_view') }}"><button type="submit" class="btn btn-outline-primary btn-block">Назад на главную</button></a>
       </div>
     </div>
   </div>
